@@ -122,6 +122,10 @@
     box-shadow: 0 4px 18px rgba(0,0,0,.45);
     margin: 16px 0;
   }
+  /* Pen demo: three slants of the same hand */
+  .paper .pen { display: inline-block; }
+  .paper .pen2 { transform: skewX(-3.4deg) scale(1.03); }
+  .paper .pen3 { transform: skewX(2.6deg) scale(.97); letter-spacing: .25px; }
 
   .kbd {
     display: inline-block;
@@ -163,7 +167,7 @@
 
 <header>
   <h1>Agent Instructions — Handwritten Assignment Workflow</h1>
-  <p>Reference file for future sessions. Folder: <code>E:\Workplace\Assignment</code> · Last updated 18 Oct 2026</p>
+  <p>Reference file for future sessions. Folder: <code>E:\Workplace\Assignment</code> · Last updated 30 Oct 2026</p>
   <p style="margin-top:8px;color:#ffd479">⚠️ Agents do not discover this HTML file automatically — the machine-readable copy lives in <code>AGENTS.md</code>, which harnesses auto-load. Keep both in sync.</p>
 </header>
 
@@ -174,6 +178,11 @@
     <td><code>wraith-ink-sonata-regular.ttf</code></td>
     <td><span class="tag keep">keep</span></td>
     <td><strong>Required.</strong> The handwriting font. Every assignment HTML loads it by relative path. Never delete or rename it.</td>
+  </tr>
+  <tr>
+    <td><code>victor-handwriting.regular.ttf</code><br><code>GloriaHallelujah-Regular.ttf</code><br><code>davyscrappywrit.regular.ttf</code><br><code>james-tan-dinawanao.regular.ttf</code></td>
+    <td><span class="tag keep">keep</span> unused</td>
+    <td>Alternate hands from the original font pack. <strong>Not loaded</strong> — none matches Wraith's ascender/descender proportions (see section 6). Kept in case a future assignment needs a genuinely different hand.</td>
   </tr>
   <tr>
     <td><code>experiment-05.html</code></td>
@@ -194,7 +203,7 @@
 </div>
 
 <h2>2. What the deliverable is</h2>
-<p>Each assignment is a <strong>single self-contained HTML page</strong> that looks like handwritten blue-ink text on ruled notebook paper, with a red margin rule, and prints cleanly to A4.</p>
+<p>Each assignment is a <strong>single self-contained HTML page</strong> that looks like handwritten blue-ink text on ruled notebook paper, with a red margin rule, words drifting between three close pens (section 6), and prints cleanly to A4.</p>
 
 <div class="paper">
   Assignment - 05<br>
@@ -209,7 +218,8 @@
   <li><strong>Get the content.</strong> ChatGPT share links will <em>not</em> load — they need JavaScript and only return the title. Ask the user to paste questions and answers as text.</li>
   <li><strong>Read source files.</strong> <code>.docx</code> is a ZIP: unzip <code>word/document.xml</code> and strip tags. Scanned <code>.pdf</code> has no text layer — extract the embedded JPEGs and read them as images.</li>
   <li><strong>Reuse the template</strong> from <code>experiment-05.html</code>. Do not restyle from scratch.</li>
-  <li><strong>Write the HTML</strong>, then verify (section 7).</li>
+  <li><strong>Add pen variation.</strong> Paste the script from section 6 before <code>&lt;/body&gt;</code>. Never hand-split words into spans — the script is the single source of truth.</li>
+  <li><strong>Write the HTML</strong>, then verify (section 8).</li>
   <li><strong>Deliver</strong> and tell the user how to print.</li>
 </ol>
 
@@ -245,6 +255,20 @@ h2.q, h3, p, li, .title, .code, td, th {
   top: 7px;
 }
 
+/* Pen variation: split words, one pen per chunk (section 6) */
+.wd { white-space: nowrap; }
+.chunk {
+  display: inline-block;
+  white-space: nowrap;
+  transform: translateY(var(--dy, 0px)) rotate(var(--rot, 0deg))
+             skewX(var(--sk, 0deg)) scale(calc(var(--sc, 1) * var(--pen, 1)));
+  transform-origin: 50% 100%;
+  letter-spacing: var(--ls, 0);
+}
+.chunk[data-pen="1"] { --sk: 0deg; --pen: 1; }
+.chunk[data-pen="2"] { --sk: -3.4deg; --pen: 1.03; --ls: .05px; }
+.chunk[data-pen="3"] { --sk: 2.6deg; --pen: .97; --ls: .25px; }
+
 @page { size: A4; margin: 0; }
 @media print {
   body { background: #fff; }
@@ -268,6 +292,8 @@ h2.q, h3, p, li, .title, .code, td, th {
   <tr><td>Page heading</td><td>Only <code>Assignment - 0N</code>, centred, underlined, large. <strong>No</strong> name / roll / branch / date / subject block — the user had this removed.</td></tr>
   <tr><td>Date field</td><td>Optional single line <code>Date - ____ / ____ / 26</code> top-left, plus a small ruled Page No./Date stamp box top-right.</td></tr>
   <tr><td>Section headings</td><td>Underlined via CSS only (<code>h2.q</code>, <code>h3</code>).</td></tr>
+  <tr><td>Bold text</td><td><strong>Never in an assignment.</strong> The user explicitly rejected <code>&lt;b&gt;</code> on labels such as <em>Aim :</em>, <em>Binary Tree :</em>, <em>Types of traversal :</em>. Labels are plain text — distinguish them by position, not weight. No <code>font-weight: bold</code> either.</td></tr>
+  <tr><td>Word variation</td><td>Every eligible word splits into 2–3 chunks, each on a different pen (section 6). Never hand-split — paste the script.</td></tr>
   <tr><td>Inline underlines</td><td><strong>Keep almost none.</strong> The user explicitly asked to strip them. Labels like <em>Metal production :</em>, <em>Examples :</em>, <em>Definition :</em> must NOT be wrapped in <code>&lt;u&gt;</code>. At most keep <code>Ans.</code>, <code>Conclusion :</code>, <code>Result :</code>.</td></tr>
   <tr><td>Length</td><td>Match the supplied content. If the user says "keep the exact same length", never pad or summarise.</td></tr>
   <tr><td>Scope</td><td>Mirror the reference sample they give. The user rejected an over-long draft in favour of a shorter reference format — check length against it first.</td></tr>
@@ -275,7 +301,161 @@ h2.q, h3, p, li, .title, .code, td, th {
   <tr><td>Code blocks</td><td><code>&lt;pre class="code"&gt;</code>, same handwriting font, 32px line-height. Escape <code>&lt;</code> as <code>&amp;lt;</code>.</td></tr>
 </table>
 
-<h2>6. Humanistic errors (make it look real)</h2>
+<h2>6. Pen variation &mdash; split words across similar hands</h2>
+<p>Handwriting is not one typeface. Real script drifts in slant, size and spacing several times inside a single word. Reproduce that cheaply: break each eligible word into 2&ndash;3 chunks and give each chunk a different pen.</p>
+<p>User's wording: <em>each set of letters is written from a different yet similar font.</em> Neighbouring chunks must differ, but never enough to look like two authors.</p>
+
+<h3>The pens are derived from the approved font</h3>
+<p>All three pens are the same face (<code>Wraith Ink</code>) with a small affine change, so they can never clash:</p>
+<table>
+  <tr><th style="width:10%">Pen</th><th style="width:38%">CSS</th><th>Look</th></tr>
+  <tr><td>1</td><td><code>--sk: 0deg</code>, <code>--pen: 1</code></td><td>the approved hand, unchanged</td></tr>
+  <tr><td>2</td><td><code>--sk: -3.4deg</code>, <code>--pen: 1.03</code></td><td>leans forward, a touch larger</td></tr>
+  <tr><td>3</td><td><code>--sk: 2.6deg</code>, <code>--pen: .97</code>, <code>letter-spacing: .25px</code></td><td>leans back, airier</td></tr>
+</table>
+
+<div class="paper">
+  <span class="pen pen1">Hand</span><span class="pen pen2">writ</span><span class="pen pen3">ing</span> drifts between three close pens.<br>
+  The <span class="pen pen1">me</span><span class="pen pen2">tho</span><span class="pen pen3">d</span> stays readable.
+</div>
+<p style="color:#9aa3b5;font-size:14.5px">&uarr; The same word cut into three chunks, one pen each. The difference is deliberately small.</p>
+
+<div class="card warn">
+  <h3>Do not mix the other TTFs</h3>
+  <p>Measured against Wraith, Victor's ascenders are 29% shorter and its descenders 41&ndash;51% shorter; Gloria's x-height is 25% larger. Mixed families read as a collage, not as one hand. A second family may join the pool only if x-height, cap-height, ascender and descender all land within about 8% of Wraith's.</p>
+</div>
+
+<h3>The algorithm</h3>
+<p>A runtime script, pasted once before <code>&lt;/body&gt;</code>. It never edits the source text by hand, so the same page always renders the same way.</p>
+<ol>
+  <li>Walk every text node in <code>.sheet</code>; skip <code>pre</code>, <code>code</code>, <code>h1</code>, <code>h2</code>, <code>h3</code>, <code>.title</code> and anything marked <code>data-no-split</code>.</li>
+  <li>Eligible word = <code>/^[A-Za-z][A-Za-z'&rsquo;-]*$/</code> and at least 4 letters. Numbers, formulas, e-mail addresses and variable names are left whole.</li>
+  <li>Seed = FNV-1a hash of the word, XORed with the page seed and the word's index, fed to a mulberry32 PRNG. Deterministic: reload and print match exactly.</li>
+  <li>40% of eligible words split (<code>SPLIT_RATE = 0.40</code>); the rest stay whole. That restraint is what makes it look natural.</li>
+  <li>Split into 2 chunks; 25% of words with 6+ letters get 3 (<code>THREE_WAY = 0.25</code>).</li>
+  <li>Cut points keep every chunk at 2+ letters (<code>MIN_CHUNK = 2</code>).</li>
+  <li>Pens are drawn without replacement, so neighbouring chunks &mdash; and all chunks in one word &mdash; always differ.</li>
+  <li>Each chunk also gets its own micro-jitter: rotate &plusmn;0.5&deg;, shift &plusmn;0.7px, scale 0.99&ndash;1.01 on top of its pen's own scale. That is what stops identical pens from looking identical.</li>
+  <li>If JavaScript is off, the page is plain text &mdash; still correct, just uniform.</li>
+</ol>
+
+<h3>Tuning</h3>
+<table>
+  <tr><th style="width:26%">Constant</th><th style="width:14%">Default</th><th>Effect</th></tr>
+  <tr><td><code>SPLIT_RATE</code></td><td><code>0.40</code></td><td>share of eligible words split</td></tr>
+  <tr><td><code>THREE_WAY</code></td><td><code>0.25</code></td><td>chance a 6+ letter word uses 3 pens</td></tr>
+  <tr><td><code>MIN_CHUNK</code></td><td><code>2</code></td><td>shortest allowed piece</td></tr>
+  <tr><td><code>SEED</code></td><td><code>0x5f356495</code></td><td>change per assignment for a different cut pattern</td></tr>
+</table>
+<p>Keep the defaults unless the user asks. Never raise <code>SPLIT_RATE</code> above ~0.6 &mdash; every word splitting reads as a ransom note, not handwriting.</p>
+
+<h3>Script (paste before <code>&lt;/body&gt;</code>)</h3>
+<pre><code>&lt;script&gt;
+/* Pen variation: split prose words into 2-3 chunks, each in a different pen.
+   Deterministic - the same text + seed renders identically on reload and print. */
+(function () {
+  var SPLIT_RATE = 0.40;   // share of eligible words that get split
+  var THREE_WAY = 0.25;    // chance that a 6+ letter split uses 3 chunks
+  var MIN_CHUNK = 2;       // never leave a one-letter piece
+  var SEED = 0x5f356495;   // one seed per assignment
+  var WORD = /^[A-Za-z][A-Za-z&#x27;\u2019-]*$/;
+
+  function hash(s) {
+    var h = 2166136261;
+    for (var i = 0; i &lt; s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h &gt;&gt;&gt; 0;
+  }
+
+  function rng(seed) {
+    return function () {
+      seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed &gt;&gt;&gt; 15, 1 | seed);
+      t = t + Math.imul(t ^ t &gt;&gt;&gt; 7, 61 | t) ^ t;
+      return ((t ^ t &gt;&gt;&gt; 14) &gt;&gt;&gt; 0) / 4294967296;
+    };
+  }
+
+  function cut(word, rnd) {
+    var n = word.length;
+    if (n &lt; 2 * MIN_CHUNK || rnd() &gt;= SPLIT_RATE) return [word];
+    var k = n &gt;= 3 * MIN_CHUNK &amp;&amp; rnd() &lt; THREE_WAY ? 3 : 2;
+    var cuts = [], c;
+    if (k === 2) {
+      cuts.push(MIN_CHUNK + Math.floor(rnd() * (n - 2 * MIN_CHUNK + 1)));
+    } else {
+      c = MIN_CHUNK + Math.floor(rnd() * (n - 3 * MIN_CHUNK + 1));
+      cuts.push(c);
+      cuts.push(c + MIN_CHUNK + Math.floor(rnd() * (n - c - 2 * MIN_CHUNK + 1)));
+    }
+    var parts = [], last = 0;
+    for (var i = 0; i &lt; cuts.length; i++) {
+      parts.push(word.slice(last, cuts[i]));
+      last = cuts[i];
+    }
+    parts.push(word.slice(last));
+    return parts;
+  }
+
+  function pens(k, rnd) {
+    var pool = [1, 2, 3];
+    var out = [];
+    while (out.length &lt; k) out.push(pool.splice(Math.floor(rnd() * pool.length), 1)[0]);
+    return out;
+  }
+
+  function build(word, seed) {
+    var rnd = rng(seed);
+    var parts = cut(word, rnd);
+    if (parts.length &lt; 2) return null;
+    var names = pens(parts.length, rnd);
+    var wd = document.createElement(&#x27;span&#x27;);
+    wd.className = &#x27;wd&#x27;;
+    parts.forEach(function (part, i) {
+      var s = document.createElement(&#x27;span&#x27;);
+      s.className = &#x27;chunk&#x27;;
+      s.setAttribute(&#x27;data-pen&#x27;, names[i]);
+      s.style.setProperty(&#x27;--rot&#x27;, (rnd() * 1.0 - 0.5).toFixed(2) + &#x27;deg&#x27;);
+      s.style.setProperty(&#x27;--dy&#x27;, (rnd() * 1.4 - 0.7).toFixed(2) + &#x27;px&#x27;);
+      s.style.setProperty(&#x27;--sc&#x27;, (0.99 + rnd() * 0.02).toFixed(3));
+      s.textContent = part;
+      wd.appendChild(s);
+    });
+    return wd;
+  }
+
+  var sheet = document.querySelector(&#x27;.sheet&#x27;);
+  if (!sheet || sheet.querySelector(&#x27;.chunk&#x27;)) return;
+
+  var walk = document.createTreeWalker(sheet, NodeFilter.SHOW_TEXT, null);
+  var nodes = [], n;
+  while ((n = walk.nextNode())) nodes.push(n);
+
+  var index = 0;
+  nodes.forEach(function (node) {
+    var el = node.parentElement;
+    if (!el || el.closest(&#x27;pre, code, h1, h2, h3, .title, [data-no-split]&#x27;)) return;
+    var text = node.nodeValue;
+    if (!/[A-Za-z]{4,}/.test(text)) return;
+
+    var frag = document.createDocumentFragment();
+    text.split(/(\s+)/).forEach(function (token) {
+      if (!WORD.test(token)) {
+        frag.appendChild(document.createTextNode(token));
+        return;
+      }
+      var built = build(token, hash(token) ^ SEED ^ Math.imul(index++, 2654435761));
+      frag.appendChild(built || document.createTextNode(token));
+    });
+    node.parentNode.replaceChild(frag, node);
+  });
+})();
+&lt;/script&gt;</code></pre>
+<p style="color:#9aa3b5;font-size:14.5px">The <code>.wd</code> / <code>.chunk</code> CSS is already part of the core in section 4 &mdash; no extra stylesheet needed.</p>
+
+<h2>7. Humanistic errors (make it look real)</h2>
 <p>Deliberate, light imperfection. Too many looks fake; too few looks printed.</p>
 <table>
   <tr><th style="width:26%">Type</th><th style="width:30%">Markup</th><th>Examples used</th></tr>
@@ -309,16 +489,19 @@ h2.q, h3, p, li, .title, .code, td, th {
   <p><strong>2–3</strong> struck corrections · <strong>1–2</strong> smudges · <strong>2–4</strong> plain misspellings. Never corrupt formulas, code, variable names, or numerical answers.</p>
 </div>
 
-<h2>7. Before you deliver</h2>
+<h2>8. Before you deliver</h2>
 <ol>
   <li>Font path resolves relative to the HTML file — keep both files in the same folder.</li>
   <li>No raw <code>&lt;</code> inside <code>&lt;pre&gt;</code> blocks (use <code>&amp;lt;</code>).</li>
-  <li>Count <code>&lt;u&gt;</code> tags — should be near zero.</li>
+  <li>Count <code>&lt;b&gt;</code> and <code>&lt;u&gt;</code> tags — both should be <strong>0</strong>.</li>
+  <li>Word splitting: every <code>.wd</code> reads back as the original word, every chunk has 2+ letters, and no two neighbouring chunks share a <code>data-pen</code>.</li>
+  <li>No <code>.chunk</code> inside <code>pre</code>, <code>code</code>, <code>h1</code>–<code>h3</code>, <code>.title</code> or <code>[data-no-split]</code>.</li>
+  <li>Reload twice — the cut pattern must be identical (deterministic seed).</li>
   <li>If output examples are shown, verify them by hand or by running the code.</li>
   <li>Open the page, hard-refresh, and eyeball that text sits on the rules.</li>
 </ol>
 
-<h2>8. How the user prints</h2>
+<h2>9. How the user prints</h2>
 <ol>
   <li>Open in Chrome or Edge.</li>
   <li>Click the <strong>Print Assignment</strong> button in the top toolbar.</li>
@@ -331,7 +514,7 @@ h2.q, h3, p, li, .title, .code, td, th {
   <ol style="margin-bottom:0">
     <li>Copy <code>experiment-05.html</code> to a new file.</li>
     <li>Swap the heading to <code>Assignment - 0N</code> and replace the body with the new content.</li>
-    <li>Keep the CSS core untouched, apply the humanistic errors, then run section 7.</li>
+    <li>Keep the CSS core untouched, apply the humanistic errors, paste the section 6 script before <code>&lt;/body&gt;</code>, then run section 8.</li>
   </ol>
 </div>
 
